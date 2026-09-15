@@ -69,13 +69,36 @@ server.Publish(Snapshot("Other/Map"),"https://example.test");
 data=JsonSerializer.Deserialize<JsonElement>(await http.GetStringAsync("/api/overlay/state"));
 Check(data.GetProperty("mapId").ValueKind==JsonValueKind.Null,"old catalog not attributed to new map");
 server.Dispose();await server.Completion;
+using (var numericServer = new OverlayServer(port,"https://example.test",folder,new ContextHandler(true),_=>"test-token")) {
+    numericServer.Publish(Snapshot(),"https://example.test");
+    for (int i = 0; i < 30; i++) {
+        data = JsonSerializer.Deserialize<JsonElement>(await http.GetStringAsync("/api/overlay/state"));
+        if (data.GetProperty("contextStatus").GetString() == "ready") break;
+        await Task.Delay(100);
+    }
+    Check(data.GetProperty("mapId").GetString() == "676", "numeric remote map ID normalized to string");
+    Check(data.GetProperty("choices")[0].GetProperty("id").GetString() == "754", "numeric challenge ID normalized to string");
+    using var request = new HttpRequestMessage(HttpMethod.Post,"/api/overlay/selection") {
+        Content = new StringContent("{\"mapId\":\"676\",\"challengeId\":\"2141\"}",Encoding.UTF8,"application/json")
+    };
+    request.Headers.Add("Origin", $"http://127.0.0.1:{port}"); request.Headers.Add("X-GoldenLink","overlay");
+    using var response = await http.SendAsync(request);
+    Check(response.StatusCode == HttpStatusCode.OK, "numeric remote challenge can be selected");
+    data = JsonSerializer.Deserialize<JsonElement>(await http.GetStringAsync("/api/overlay/state"));
+    Check(data.GetProperty("selectedChallengeId").GetString() == "2141", "numeric selection retained");
+    Check(data.GetProperty("catalog").GetProperty("challenge").GetString() == "FC", "numeric selection resolves catalog");
+    numericServer.Dispose(); await numericServer.Completion;
+}
 Console.WriteLine("Overlay projection, HTTP assets, selection, origin and map-switch checks passed.");
 
-sealed class ContextHandler:HttpMessageHandler {
+sealed class ContextHandler(bool numericIds = false):HttpMessageHandler {
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken ct) {
         if(request.Headers.Authorization?.Parameter!="test-token")throw new Exception("missing device auth");
-        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK){Content=new StringContent("""
+        string json = """
         {"ok":true,"schema":"goldenlink.context/1","sid":"Test/Map","side":"Normal","matched":true,"map":{"id":"map","name":"Map","cnName":null,"campaign":{"id":"pack","name":"Pack","cnName":null}},"challenges":[{"id":"c","name":"C","tier":null},{"id":"fc","name":"FC","tier":"h3"}]}
-        """)});
+        """;
+        if (numericIds) json = json.Replace("\"id\":\"map\"", "\"id\":676").Replace("\"id\":\"pack\"", "\"id\":33")
+            .Replace("\"id\":\"c\"", "\"id\":754").Replace("\"id\":\"fc\"", "\"id\":2141");
+        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK){Content=new StringContent(json)});
     }
 }

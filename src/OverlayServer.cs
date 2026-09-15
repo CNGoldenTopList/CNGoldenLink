@@ -80,13 +80,18 @@ internal sealed class OverlayServer : IDisposable
         finally { http.Dispose(); }
     }
     private static string? Text(JsonElement element, string name) => element.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+    // Catalog IDs can be legacy strings or numeric IDs after the server migration.
+    // Keep the local overlay/selection contract string-based for both formats.
+    private static string? Id(JsonElement element, string name = "id") => element.TryGetProperty(name, out var v)
+        ? v.ValueKind switch { JsonValueKind.String => v.GetString(), JsonValueKind.Number => v.GetRawText(), _ => null }
+        : null;
     private string? Selection(JsonElement value) {
         if (value.GetProperty("map").ValueKind != JsonValueKind.Object) return null;
-        string id = value.GetProperty("map").GetProperty("id").GetString()!;
+        string id = Id(value.GetProperty("map"))!;
         var choices = value.GetProperty("challenges");
         selections.TryGetValue(origin + "|" + id, out var selected);
-        if (choices.EnumerateArray().Any(c => Text(c, "id") == selected)) return selected;
-        return choices.GetArrayLength() == 1 ? Text(choices[0], "id") : null;
+        if (choices.EnumerateArray().Any(c => Id(c) == selected)) return selected;
+        return choices.GetArrayLength() == 1 ? Id(choices[0]) : null;
     }
     private byte[] State() {
         lock (gate) {
@@ -97,15 +102,15 @@ internal sealed class OverlayServer : IDisposable
             object[] choices = []; string? mapId = null, selected = null;
             if (c is { } value && value.GetProperty("matched").GetBoolean()) {
                 var map = value.GetProperty("map"); var pack = map.GetProperty("campaign");
-                mapId = Text(map, "id"); selected = Selection(value);
+                mapId = Id(map); selected = Selection(value);
                 var list = value.GetProperty("challenges").EnumerateArray().ToArray();
-                var challenge = list.FirstOrDefault(ch => Text(ch, "id") == selected);
+                var challenge = list.FirstOrDefault(ch => Id(ch) == selected);
                 string? tier = challenge.ValueKind == JsonValueKind.Object ? Text(challenge, "tier") : null;
                 catalog = new { mapName = Text(map, "cnName") ?? Text(map, "name"), mapNameEn = Text(map, "name"),
                     campaign = Text(pack, "cnName") ?? Text(pack, "name"),
                     challenge = challenge.ValueKind == JsonValueKind.Object ? Text(challenge, "name") : null,
                     tier, verified = true };
-                choices = list.Select(ch => (object)new { id = Text(ch, "id"), name = Text(ch, "name"), tier = Text(ch, "tier") }).ToArray();
+                choices = list.Select(ch => (object)new { id = Id(ch), name = Text(ch, "name"), tier = Text(ch, "tier") }).ToArray();
             }
             return Encoding.UTF8.GetBytes(SyncJson.Serialize(OverlayProjection.Build(snapshot, catalog, choices, mapId, selected, contextStatus)));
         }
@@ -145,8 +150,8 @@ internal sealed class OverlayServer : IDisposable
             lock (gate) {
                 var snapshot = Volatile.Read(ref latest);
                 if (contextKey == origin + "|" + snapshot?.Live.Sid + "|" + snapshot?.Live.Side && context is { } c && c.GetProperty("matched").GetBoolean()) {
-                    string? id = Text(doc.RootElement, "challengeId"), mapId = Text(c.GetProperty("map"), "id");
-                    if (mapId == Text(doc.RootElement, "mapId") && c.GetProperty("challenges").EnumerateArray().Any(ch => Text(ch, "id") == id)) {
+                    string? id = Text(doc.RootElement, "challengeId"), mapId = Id(c.GetProperty("map"));
+                    if (mapId == Text(doc.RootElement, "mapId") && c.GetProperty("challenges").EnumerateArray().Any(ch => Id(ch) == id)) {
                         selections[origin + "|" + mapId] = id!;
                         Directory.CreateDirectory(Path.GetDirectoryName(settingsFile)!);
                         File.WriteAllText(settingsFile + ".tmp", JsonSerializer.Serialize(selections)); File.Move(settingsFile + ".tmp", settingsFile, true); accepted = true;
