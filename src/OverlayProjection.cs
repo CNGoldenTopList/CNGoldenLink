@@ -16,7 +16,7 @@ internal static class OverlayProjection
         return nodes;
     }
     public static object Build(SyncSnapshot? snapshot, object catalog, object[] choices, string? mapId, string? selected, string contextStatus,
-        object? update = null) {
+        object? update = null, object? display = null) {
         var state = snapshot?.Cct?.State; var route = state?.Metadata.Route;
         var nodes = Nodes(route);
         int index = nodes.FindIndex(n => n.Members.Contains(snapshot?.Live.Room));
@@ -48,7 +48,7 @@ internal static class OverlayProjection
         bool valid = snapshot != null && Environment.TickCount64 - snapshot.CapturedAt < 3000;
         return new {
             schema = "goldenlink.overlay/1", source = "live", connected = valid && snapshot!.Live.Sid != null,
-            catalog, choices, mapId, selectedChallengeId = selected, contextStatus, update,
+            catalog, choices, mapId, selectedChallengeId = selected, contextStatus, update, display,
             live = new { room = index >= 0 ? nodes[index].Node.CustomRoomName ?? snapshot?.Live.Room : snapshot?.Live.Room,
                 holdingGolden = snapshot?.Live.HoldingGolden == true, paused = snapshot?.Live.Paused == true || snapshot?.Live.CctTrackingPaused == true },
             cct = new {

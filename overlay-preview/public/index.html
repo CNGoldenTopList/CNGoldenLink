@@ -52,6 +52,10 @@
 
   <section id="settings" aria-labelledby="settings-title">
     <header class="section-head"><h2 id="settings-title">设置</h2><p id="settings-note">修改立即生效并保存到 Mod 设置。</p></header>
+    <div class="range">
+      <label for="bg-opacity"><b>OBS 叠加层背景不透明度</b><small>降低后底板与分隔线逐渐隐去，文字与数据条保留，并为文字加描边以便在游戏画面上辨认。100% 为主题原样。</small></label>
+      <div class="range-input"><input type="range" id="bg-opacity" min="0" max="100" step="5" value="100"><output id="bg-opacity-value" for="bg-opacity">100%</output></div>
+    </div>
     <div class="toggles">
       <label class="toggle"><span><b>连接 CN 金榜</b><small>上传实时状态、CCT 统计与通关记录。首次开启会打开浏览器授权。</small></span><input type="checkbox" data-setting="connectionEnabled"></label>
       <label class="toggle"><span><b>自动检查更新</b><small>每 6 小时读取一次发布信息，只提示，不会自动下载。</small></span><input type="checkbox" data-setting="checkUpdates"></label>

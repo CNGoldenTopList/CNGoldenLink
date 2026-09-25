@@ -1457,3 +1457,46 @@ html.obs-root {
 /* Update available: a single quiet dot beside the source label, never text on stream. */
 #update-dot {width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:var(--accent);opacity:.7}
 .board #update-dot {width:9px;height:9px;flex-basis:9px}
+
+/* Panel opacity (control hub setting, 0–100%).
+   Only surfaces and structural hairlines fade; anything that carries data keeps its colour:
+   progress tracks and fills, recent-attempt bars, PB bars, the current checkpoint, status and update dots.
+   Colours are written as rgba() over RGB triplets instead of color-mix() so older OBS browser sources render them.
+   --bg-alpha, --halo and --tint are set by app.mjs; the defaults below are the theme as designed. */
+.board {
+  --bg-alpha:1; --halo:0; --tint:.05;
+  --surface-rgb:16,31,46; --line-rgb:41,65,86;
+  --rule:rgba(var(--line-rgb),var(--bg-alpha));
+  /* Hard 1px outline in eight directions, invisible at full opacity. Inherited by all text on the board.
+     Unlike -webkit-text-stroke it does not eat into thin CJK strokes. */
+  text-shadow:
+    -1px -1px 0 rgba(0,0,0,var(--halo)), 0 -1px 0 rgba(0,0,0,var(--halo)), 1px -1px 0 rgba(0,0,0,var(--halo)),
+    -1px 0 0 rgba(0,0,0,var(--halo)), 1px 0 0 rgba(0,0,0,var(--halo)),
+    -1px 1px 0 rgba(0,0,0,var(--halo)), 0 1px 0 rgba(0,0,0,var(--halo)), 1px 1px 0 rgba(0,0,0,var(--halo))
+}
+.board.golden {--line-rgb:81,69,51}
+.board.orbit {--surface-rgb:52,42,46; --line-rgb:85,64,70}
+.board.orbit.golden {--surface-rgb:71,57,46; --line-rgb:81,69,51}
+
+/* Frame and surfaces */
+.board .mat {fill-opacity:var(--bg-alpha)}
+.board .corner {opacity:calc(.8 * var(--bg-alpha))}
+.board .challenge {background:rgba(var(--surface-rgb),var(--bg-alpha))}
+.board.orbit .status {background:rgba(56,42,46,var(--bg-alpha))}
+.board.orbit .challenge {background:linear-gradient(115deg,rgba(98,67,58,var(--bg-alpha)),rgba(62,43,48,var(--bg-alpha)));border-color:rgba(121,87,70,var(--bg-alpha))}
+.board.orbit .route {border-color:var(--rule);background:radial-gradient(ellipse at top right,rgba(225,161,118,var(--tint)),transparent 70%)}
+.board.orbit .pb {background:linear-gradient(145deg,rgba(72,48,56,var(--bg-alpha)),rgba(46,36,44,var(--bg-alpha)))}
+.board.orbit .telemetry>section {background:rgba(48,37,46,var(--bg-alpha))}
+.board.orbit .telemetry>section:first-child {background:rgba(70,50,58,var(--bg-alpha))}
+
+/* Structural hairlines. Checkpoint outlines of done/current nodes keep the accent (more specific rules above). */
+.board .rail-brand {border-bottom-color:var(--rule)}
+.board #source-label {border-color:var(--rule)}
+.board .tier-row,.board .session-detail,.board .pb,.board .rail-bottom {border-top-color:var(--rule)}
+.board .telemetry>section {border-left-color:var(--rule)}
+.board .checkpoint:before {background:var(--rule)}
+.board .cp-node {border-color:var(--rule)}
+.board .checkpoint.done .cp-node,.board .checkpoint.current .cp-node {border-color:var(--accent)}
+
+/* Decorative glows would read as smudges over game footage once the panels are gone. */
+.board.see-through .checkpoint.current .cp-node {box-shadow:none}

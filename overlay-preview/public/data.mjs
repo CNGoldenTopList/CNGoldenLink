@@ -29,7 +29,9 @@ export function normalize(raw) {
       checkpoints:Array.isArray(raw.cct?.checkpoints)?raw.cct.checkpoints.slice(0,2000).map(cp=>({name:text(cp.name),short:text(cp.short),rooms:number(cp.rooms)})):[],
       recent:Array.isArray(raw.cct?.recent)?raw.cct.recent.slice(-20).filter(v=>typeof v==='boolean'):[]},
     area:{noGoldenBestDeaths:number(raw.area?.noGoldenBestDeaths),totalDeaths:number(raw.area?.totalDeaths)},
-    update:{available:raw.update?.available === true,latest:text(raw.update?.latest),showInObs:raw.update?.showInObs !== false}
+    update:{available:raw.update?.available === true,latest:text(raw.update?.latest),showInObs:raw.update?.showInObs !== false},
+    // Missing or invalid values keep the theme as designed.
+    display:{backgroundOpacity:Math.min(100,Math.max(0,number(raw.display?.backgroundOpacity)??100))}
   };
 }
 export class HttpSource {

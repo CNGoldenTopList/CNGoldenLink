@@ -1,6 +1,7 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
 import {normalizeInsights,normalizeSettings,rolling,connectionLabel} from '../public/insights.mjs';
-import {demoInsights,demoSettings} from '../public/demo.mjs';
+import {demoInsights,demoSettings,demoSnapshot} from '../public/demo.mjs';
+import {normalize} from '../public/data.mjs';
 test('insights keep unknown numbers as null and reject foreign schemas',()=>{
   assert.throws(()=>normalizeInsights({}));
   const d=demoInsights();d.rooms[0].choke=NaN;d.token='secret';
@@ -29,4 +30,12 @@ test('rolling mean and connection labels',()=>{
   assert.equal(connectionLabel('connected'),'已连接');
   assert.match(connectionLabel('connected_data_error:scope_too_large'),/scope_too_large/);
   assert.match(connectionLabel('server_error:x'),/连接错误/);
+});
+test('panel opacity defaults to the designed theme and is clamped',()=>{
+  assert.equal(normalize(demoSnapshot()).display.backgroundOpacity,100);
+  assert.equal(normalize({...demoSnapshot(),display:{backgroundOpacity:35}}).display.backgroundOpacity,35);
+  assert.equal(normalize({...demoSnapshot(),display:{backgroundOpacity:250}}).display.backgroundOpacity,100);
+  assert.equal(normalize({...demoSnapshot(),display:{backgroundOpacity:'0'}}).display.backgroundOpacity,100);
+  assert.equal(normalizeSettings({settings:{backgroundOpacity:42.4}}).values.backgroundOpacity,42);
+  assert.equal(normalizeSettings({}).values.backgroundOpacity,null);
 });

@@ -1,6 +1,6 @@
 # CNGoldenLink
 
-CN 金榜的 Celeste 联动 Mod，版本 0.3.1。
+CN 金榜的 Celeste 联动 Mod，版本 0.3.2。
 
 在 Mod 菜单或控制台开启连接后，通过浏览器登录 CN 金榜并授权。Mod 按玩家走过的路线同步：进入地图、切换房间、带金状态变化（拿起、死亡）、通关和退出地图时各上传一次当前状态、CCT 统计和地图死亡数据；在同一房间内的练习不会触发上传。空闲时每 25 秒发送一次轻量在线心跳，保持服务端 60 秒在线状态。服务地址默认为 `https://cngist.com`，可通过设置文件的 `ServiceBaseUrl` 修改。0.3.1 起，设置中仍为旧默认地址 `https://gist.diving-fish.com` 的安装会在启动时自动改为新地址，并复制本机登录凭据与挑战选择，无需重新授权；自定义的服务地址保持不变。
 
@@ -39,7 +39,7 @@ CN 金榜的 Celeste 联动 Mod，版本 0.3.1。
 - **历史会话**：CCT 保存的每个练习日 PB、会话 PB、会话平均到达和房间平均成功率。
 - 汇总：带金次数、平均到达、PB、从头通关概率（各房间最近 20 次成功率相乘）、最难房间（到达 ≥ 5 次中带金成功率最低），以及各 CP 的死亡与一次通过概率。
 
-图表数据来自 CCT 当前地图的统计与会话历史，仅在本机计算，不上传；只有控制台打开时 Mod 才每 2 秒读取一次历史数据。图表库 Chart.js（MIT）随安装包嵌入，不请求外部资源。设置区可开关金榜连接、自动检查更新、OBS 更新提示点和本地诊断日志，修改立即保存到 Mod 设置；端口和服务地址仍在设置文件中修改。页面接口只接受同源请求。
+图表数据来自 CCT 当前地图的统计与会话历史，仅在本机计算，不上传；只有控制台打开时 Mod 才每 2 秒读取一次历史数据。图表库 Chart.js（MIT）随安装包嵌入，不请求外部资源。设置区可调整 OBS 叠加层背景不透明度（0–100%，默认 100%：降低时底板与分隔线逐渐隐去，文字与数据条保留并加描边，拖动时 OBS 实时跟随），并可开关金榜连接、自动检查更新、OBS 更新提示点和本地诊断日志，修改立即保存到 Mod 设置；端口和服务地址仍在设置文件中修改。页面接口只接受同源请求。
 
 Overlay 开关独立于金榜上传开关，关闭上传仍可显示本地 CCT 数据。金榜地图、挑战和 Tier 需要先通过现有连接流程完成授权，并由服务端提供 `/api/tracker/overlay-context` 接口。
 
@@ -79,7 +79,7 @@ dotnet build -c Release
 ./scripts/package.ps1 -CelestePath "E:/SteamLibrary/steamapps/common/Celeste"
 ```
 
-生成的 `artifacts/CNGoldenLink-0.3.1.zip` 放入游戏 `Mods` 目录，移走旧版本后启动游戏。安装包不包含游戏或 CCT 程序集。
+生成的 `artifacts/CNGoldenLink-0.3.2.zip` 放入游戏 `Mods` 目录，移走旧版本后启动游戏。安装包不包含游戏或 CCT 程序集。
 
 打包脚本自动扫描 `Dialog/Simplified Chinese.txt`，对照原版字库生成缺字补充，将 `.fnt` 和 PNG 放入安装包的 `Dialog/Fonts`。模组自身的中文 Dialog 无需额外安装 Chinese Font Pack 或 Extended Chinese Fonts。每次打包都会重新生成，新增文案无需手动补字；运行时返回的任意中文文本不在此覆盖范围，OBS Overlay 使用浏览器字体。
 
@@ -96,7 +96,7 @@ node --test overlay-preview/test/*.test.mjs
 
 ## 自动发布
 
-GitHub Actions 在推送版本标签时运行测试、构建并发布 Release。标签必须指向 main 中的提交，格式为 `v0.3.1` 或 `0.3.1`，并与 `.csproj` 和 `everest.yaml` 中的 Mod 版本一致。Actions 页面也可手动运行构建，仅生成下载产物，不发布。
+GitHub Actions 在推送版本标签时运行测试、构建并发布 Release。标签必须指向 main 中的提交，格式为 `v0.3.2` 或 `0.3.2`，并与 `.csproj` 和 `everest.yaml` 中的 Mod 版本一致。Actions 页面也可手动运行构建，仅生成下载产物，不发布。
 
 构建时自动按 `everest.yaml` 的依赖版本下载 Everest 官方 stable Release 的 `lib-stripped.zip` 和 CCT 官方对应 Release 的安装包。更新 CCT 时修改清单中的依赖版本即可；不自动追踪 latest。新版本 API 不兼容会导致编译失败，行为兼容性仍需游戏内验证。
 

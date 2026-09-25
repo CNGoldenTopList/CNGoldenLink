@@ -105,6 +105,13 @@ figcaption small {color:var(--faint);font-size:12px}
 .toggle input:checked {background:var(--accent)}
 .toggle input:checked::after {transform:translateX(16px);background:#10222c}
 .toggle input:disabled {opacity:.4;cursor:default}
+.range {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);gap:12px 34px;align-items:center;padding:14px 0;border-top:1px solid var(--line);margin-bottom:0}
+.range label {display:flex;flex-direction:column;gap:4px}
+.range b {font-size:14px;font-weight:600}
+.range small {color:var(--muted);font-size:12px;line-height:1.6}
+.range-input {display:flex;align-items:center;gap:14px}
+.range-input input {flex:1;accent-color:var(--accent);min-width:0}
+.range-input output {font:600 14px var(--number-face);font-variant-numeric:tabular-nums;min-width:44px;text-align:right}
 .info {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 34px;margin:24px 0 0}
 .info div {display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;padding:10px 0;border-top:1px solid var(--line);align-items:center}
 .info dt {color:var(--muted);font-size:12px}
@@ -114,7 +121,7 @@ figcaption small {color:var(--faint);font-size:12px}
 .foot {display:flex;justify-content:space-between;gap:16px;padding:18px max(16px,4vw);color:var(--faint);font-size:11px;letter-spacing:1px;border-top:1px solid var(--line)}
 
 @media(max-width:900px) {
-  .now,.themes,.charts,.toggles,.info {grid-template-columns:minmax(0,1fr)}
+  .now,.themes,.charts,.toggles,.info,.range {grid-template-columns:minmax(0,1fr)}
   .kpis {grid-template-columns:repeat(2,minmax(0,1fr))}
   .kpis div:nth-child(odd) {border-left:0;padding-left:0}
   .kpis div {border-top:1px solid var(--line)}

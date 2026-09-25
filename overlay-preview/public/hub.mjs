@@ -58,6 +58,13 @@ document.querySelectorAll('[data-setting]').forEach(input=>input.onchange=async(
   catch{input.checked=!value;$('settings-note').textContent=live?'保存失败：请确认游戏仍在运行。':'演示模式不能修改设置。';}
   finally{input.disabled=false;}
 });
+// Opacity: send while dragging (debounced) so OBS follows live, and once more on release.
+const opacity=$('bg-opacity');let opacityTimer,opacityDragging=false;
+const sendOpacity=async()=>{const value=Number(opacity.value);
+  try{if(!live)throw new Error('demo');await post('/api/overlay/settings',{backgroundOpacity:value});if(settings)settings.values.backgroundOpacity=value;$('settings-note').textContent='已保存。';}
+  catch{$('settings-note').textContent=live?'保存失败：请确认游戏仍在运行。':'演示模式不能修改设置。';}};
+opacity.oninput=()=>{opacityDragging=true;text('bg-opacity-value',`${opacity.value}%`);clearTimeout(opacityTimer);opacityTimer=setTimeout(sendOpacity,250);};
+opacity.onchange=()=>{clearTimeout(opacityTimer);opacityDragging=false;sendOpacity();};
 $('check-update').onclick=async()=>{
   const b=$('check-update');b.disabled=true;
   try{if(live)await post('/api/overlay/update-check',{});text('i-update','检查中…');setTimeout(()=>{b.disabled=false;pollSettings();},3000);}
@@ -66,6 +73,7 @@ $('check-update').onclick=async()=>{
 function renderSettings(){
   const s=settings.values,u=settings.update;
   document.querySelectorAll('[data-setting]').forEach(input=>{if(!input.disabled&&s[input.dataset.setting]!=null)input.checked=s[input.dataset.setting];});
+  if(!opacityDragging&&document.activeElement!==opacity&&s.backgroundOpacity!=null){opacity.value=String(s.backgroundOpacity);text('bg-opacity-value',`${s.backgroundOpacity}%`);}
   text('version',s.version?`v${s.version}`:'');text('i-version',s.version||'—');
   text('connection',connectionLabel(s.connectionEnabled?s.connectionStatus:'off'));
   text('i-cct',s.cctAvailable==null?'—':s.cctAvailable?'已加载':'未加载（图表与统计不可用）');

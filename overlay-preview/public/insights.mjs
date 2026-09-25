@@ -31,6 +31,7 @@ export function normalizeSettings(raw){
   return {
     values:{version:text(s.version),connectionEnabled:bool(s.connectionEnabled),connectionStatus:text(s.connectionStatus),
       diagnosticsEnabled:bool(s.diagnosticsEnabled),checkUpdates:bool(s.checkUpdates),updateDotInObs:bool(s.updateDotInObs),
+      backgroundOpacity:number(s.backgroundOpacity)==null?null:Math.min(100,Math.max(0,Math.round(s.backgroundOpacity))),
       overlayPort:number(s.overlayPort),serviceBaseUrl:text(s.serviceBaseUrl),cctAvailable:bool(s.cctAvailable)},
     // Only follow https links; the mod already restricts hosts, this guards the preview and future sources.
     update:u?{available:u.available===true,current:text(u.current),latest:text(u.latest),

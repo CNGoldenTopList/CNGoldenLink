@@ -15,6 +15,8 @@ public sealed class GoldenLinkSettings : EverestModuleSettings
     public int OverlayPort { get; set; } = 32272;
     public bool CheckUpdates { get; set; } = true;
     public bool UpdateDotInObs { get; set; } = true;
+    /// <summary>OBS overlay panel opacity, 0–100. Lower values keep text and data bars over the game capture.</summary>
+    public int OverlayBackgroundOpacity { get; set; } = 100;
 }
 
 public sealed class GoldenLinkSaveData : EverestModuleSaveData
@@ -129,12 +131,14 @@ public sealed class GoldenLinkModule : EverestModule
         return Dialog.Has(key) ? Dialog.Clean(key) : Dialog.Clean("CNGOLDENLINK_STATUS_ERROR") + " " + state;
     }
     // Browser-originated changes are validated by the overlay server and applied here on the game thread.
-    private void ApplySetting(string key, bool value) {
+    private void ApplySetting(string key, int value) {
+        bool on = value != 0;
         switch (key) {
-            case "connectionEnabled": if (value != Settings.ConnectionEnabled) SetConnection(value); break;
-            case "diagnosticsEnabled": Settings.DiagnosticsEnabled = value; break;
-            case "checkUpdates": Settings.CheckUpdates = value; break;
-            case "updateDotInObs": Settings.UpdateDotInObs = value; break;
+            case "connectionEnabled": if (on != Settings.ConnectionEnabled) SetConnection(on); break;
+            case "diagnosticsEnabled": Settings.DiagnosticsEnabled = on; break;
+            case "checkUpdates": Settings.CheckUpdates = on; break;
+            case "updateDotInObs": Settings.UpdateDotInObs = on; break;
+            case "backgroundOpacity": Settings.OverlayBackgroundOpacity = Math.Clamp(value, 0, 100); break;
             default: return;
         }
         SaveSettings();
@@ -199,9 +203,11 @@ public sealed class GoldenLinkModule : EverestModule
                 overlay.PublishSettings(new {
                     version = Version, connectionEnabled = Settings.ConnectionEnabled, connectionStatus = ConnectionState(),
                     diagnosticsEnabled = Settings.DiagnosticsEnabled, checkUpdates = Settings.CheckUpdates,
-                    updateDotInObs = Settings.UpdateDotInObs, overlayPort = overlay.Port, serviceBaseUrl = Settings.ServiceBaseUrl,
+                    updateDotInObs = Settings.UpdateDotInObs, backgroundOpacity = Math.Clamp(Settings.OverlayBackgroundOpacity, 0, 100),
+                    overlayPort = overlay.Port, serviceBaseUrl = Settings.ServiceBaseUrl,
                     cctAvailable = CctAdapter.Available });
                 overlay.PublishUpdate(updates?.Info, Settings.UpdateDotInObs);
+                overlay.PublishDisplay(Settings.OverlayBackgroundOpacity);
             }
             if (Settings.ConnectionEnabled && uploader != null && _SaveData is GoldenLinkSaveData save) {
                 if (!ReferenceEquals(queuedSave, save)) {

@@ -1,5 +1,5 @@
 - Name: CNGoldenLink
-  Version: 0.3.1
+  Version: 0.3.2
   DLL: bin/CNGoldenLink.dll
   Dependencies:
     - Name: Everest

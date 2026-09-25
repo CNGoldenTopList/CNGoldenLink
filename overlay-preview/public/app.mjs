@@ -68,6 +68,11 @@ function render(){
     const count=document.createElement('span');count.className='cp-rooms';count.textContent=`${cp.rooms??'—'} 间`;e.append(node,names,count);return e;
   });$('checkpoints').replaceChildren(...checkpoints);
   $('history').replaceChildren(...c.recent.map(value=>{const e=document.createElement('i');e.className=value?'pass':'fail';e.title=value?'通过':'失败';return e;}));
+  // Panel opacity: backgrounds and hairlines fade with --bg-alpha, text gains an outline as they disappear.
+  const alpha=d.display.backgroundOpacity/100,board=$('board');
+  if(board.dataset.alpha!==String(alpha)){board.dataset.alpha=String(alpha);
+    board.style.setProperty('--bg-alpha',alpha.toFixed(2));board.style.setProperty('--halo',(1-alpha).toFixed(2));
+    board.style.setProperty('--tint',(alpha*.05).toFixed(3));board.classList.toggle('see-through',alpha<1);}
   const update=$('update-dot'),u=d.update;
   update.hidden=!(u.available&&(!obs||u.showInObs));update.title=u.latest?`CNGoldenLink ${u.latest} 可更新 · 在控制台查看`:'';
   set('state-line',!d.connected?'连接中断 · 保留最后快照':d.live.paused?'稍作停留，下一次继续。':d.live.holdingGolden?'金莓在身，下一间见。':'练习的每一步，都有迹可循。');

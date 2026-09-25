@@ -113,7 +113,15 @@ Check(await PostJson("/api/overlay/settings","{\"connectionEnabled\":true}",fals
 Check(await PostJson("/api/overlay/settings","{\"overlayPort\":1}")==HttpStatusCode.Conflict && server.SettingChanges.IsEmpty,"only whitelisted settings");
 Check(await PostJson("/api/overlay/settings","{\"checkUpdates\":\"yes\"}")==HttpStatusCode.Conflict,"settings must be booleans");
 Check(await PostJson("/api/overlay/settings","{\"checkUpdates\":false,\"updateDotInObs\":true}")==HttpStatusCode.OK,"settings accepted");
-Check(server.SettingChanges.TryDequeue(out var first) && first==("checkUpdates",false) && server.SettingChanges.Count==1,"settings queued for the game thread");
+Check(server.SettingChanges.TryDequeue(out var first) && first==("checkUpdates",0) && server.SettingChanges.Count==1,"settings queued for the game thread");
+server.SettingChanges.Clear();
+Check(await PostJson("/api/overlay/settings","{\"backgroundOpacity\":35}")==HttpStatusCode.OK && server.SettingChanges.TryDequeue(out var opacity) && opacity==("backgroundOpacity",35),"opacity accepted as a percentage");
+foreach (var bad in new[] { "{\"backgroundOpacity\":101}", "{\"backgroundOpacity\":-1}", "{\"backgroundOpacity\":12.5}", "{\"backgroundOpacity\":true}", "{\"checkUpdates\":35}" })
+    Check(await PostJson("/api/overlay/settings",bad)==HttpStatusCode.Conflict && server.SettingChanges.IsEmpty,"invalid setting rejected: "+bad);
+server.PublishDisplay(40);
+data=JsonSerializer.Deserialize<JsonElement>(await http.GetStringAsync("/api/overlay/state"));
+Check(data.GetProperty("display").GetProperty("backgroundOpacity").GetInt32()==40,"overlay state carries panel opacity");
+server.PublishDisplay(100);
 bool checkRequested=false; server.CheckUpdatesRequested=()=>checkRequested=true;
 Check(await PostJson("/api/overlay/update-check","{}")==HttpStatusCode.OK && checkRequested,"manual update check");
 Check((await http.GetStringAsync("/app.mjs")).Contains("liveMode"),"embedded scripts are served");

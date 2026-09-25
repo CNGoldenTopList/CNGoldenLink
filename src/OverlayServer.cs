@@ -30,9 +30,15 @@ internal sealed class OverlayServer : IDisposable
     private object? settingsView, updateView;
     private long insightsRequestedAt = long.MinValue / 2;
     /// <summary>Validated browser setting changes; the module applies them on the game thread.</summary>
-    public ConcurrentQueue<(string Key, bool Value)> SettingChanges { get; } = new();
+    /// <remarks>Booleans are queued as 0/1; <c>backgroundOpacity</c> is an integer percentage.</remarks>
+    public ConcurrentQueue<(string Key, int Value)> SettingChanges { get; } = new();
     /// <summary>Settings the control page may change. Everything else stays in the mod menu / settings file.</summary>
     public static readonly string[] EditableSettings = ["connectionEnabled", "diagnosticsEnabled", "checkUpdates", "updateDotInObs"];
+    /// <summary>Integer settings and their inclusive range.</summary>
+    public static readonly Dictionary<string, (int Min, int Max)> EditableNumbers = new() { ["backgroundOpacity"] = (0, 100) };
+    private int backgroundOpacity = 100;
+    /// <summary>OBS overlay panel opacity in percent; 100 is the theme as designed.</summary>
+    public void PublishDisplay(int opacity) => Volatile.Write(ref backgroundOpacity, Math.Clamp(opacity, 0, 100));
     public Action? CheckUpdatesRequested { get; set; }
     /// <summary>Warning sink; the module forwards to the Everest log. Kept as a hook so tests run without Celeste.</summary>
     public Action<string>? Log { get; set; }
@@ -187,7 +193,7 @@ internal sealed class OverlayServer : IDisposable
                 choices = list.Select(ch => (object)new { id = Id(ch), name = Text(ch, "name"), tier = Text(ch, "tier") }).ToArray();
             }
             return Encoding.UTF8.GetBytes(SyncJson.Serialize(OverlayProjection.Build(snapshot, catalog, choices, mapId, selected, contextStatus,
-                Volatile.Read(ref updateView))));
+                Volatile.Read(ref updateView), new { backgroundOpacity = Volatile.Read(ref backgroundOpacity) })));
         }
     }
     private byte[] Insights() {
@@ -204,11 +210,15 @@ internal sealed class OverlayServer : IDisposable
         }
         return Encoding.UTF8.GetBytes(SyncJson.Serialize(InsightsProjection.Build(snapshot?.Cct, snapshot?.Cct == null ? null : past, mapName, campaign, challenge)));
     }
-    private static bool TryReadSettings(JsonElement body, List<(string, bool)> changes) {
+    private static bool TryReadSettings(JsonElement body, List<(string, int)> changes) {
         if (body.ValueKind != JsonValueKind.Object) return false;
         foreach (var p in body.EnumerateObject()) {
-            if (!EditableSettings.Contains(p.Name) || p.Value.ValueKind is not (JsonValueKind.True or JsonValueKind.False)) return false;
-            changes.Add((p.Name, p.Value.GetBoolean()));
+            if (EditableSettings.Contains(p.Name) && p.Value.ValueKind is JsonValueKind.True or JsonValueKind.False)
+                changes.Add((p.Name, p.Value.GetBoolean() ? 1 : 0));
+            else if (EditableNumbers.TryGetValue(p.Name, out var range) && p.Value.ValueKind == JsonValueKind.Number
+                && p.Value.TryGetInt32(out int number) && number >= range.Min && number <= range.Max)
+                changes.Add((p.Name, number));
+            else return false;
         }
         return changes.Count > 0;
     }
@@ -257,7 +267,7 @@ internal sealed class OverlayServer : IDisposable
                     }
                 }
             } else if (path == "/api/overlay/settings") {
-                var changes = new List<(string, bool)>();
+                var changes = new List<(string, int)>();
                 if (accepted = TryReadSettings(doc.RootElement, changes)) foreach (var change in changes) SettingChanges.Enqueue(change);
             } else if (path == "/api/overlay/update-check") {
                 CheckUpdatesRequested?.Invoke(); accepted = true;
