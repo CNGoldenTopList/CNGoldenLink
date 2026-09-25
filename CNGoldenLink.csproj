@@ -4,7 +4,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <Version>0.3.0</Version>
+    <Version>0.3.1</Version>
     <CelestePath Condition="'$(CelestePath)' == ''">$(MSBuildProjectDirectory)/..</CelestePath>
     <CctAssemblyPath Condition="'$(CctAssemblyPath)' == ''">$(CelestePath)/Mods/Cache/ConsistencyTracker.ConsistencyTracker.dll</CctAssemblyPath>
   </PropertyGroup>

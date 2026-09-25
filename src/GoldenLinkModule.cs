@@ -9,7 +9,7 @@ namespace CNGoldenLink;
 public sealed class GoldenLinkSettings : EverestModuleSettings
 {
     public bool ConnectionEnabled { get; set; }
-    public string ServiceBaseUrl { get; set; } = "https://gist.diving-fish.com";
+    public string ServiceBaseUrl { get; set; } = ServiceMigration.NewDefault;
     public bool DiagnosticsEnabled { get; set; }
     public bool OverlayEnabled { get; set; }
     public int OverlayPort { get; set; } = 32272;
@@ -49,6 +49,17 @@ public sealed class GoldenLinkModule : EverestModule
     private GoldenLinkSaveData? queuedSave;
     private Queue<AreaStatistics> savedAreas = new();
 
+    public override void LoadSettings() {
+        base.LoadSettings();
+        try {
+            string migrated = ServiceMigration.Migrate(Settings.ServiceBaseUrl, Path.Combine(Everest.PathGame, "CNGoldenLinkData"),
+                CredentialStore.Load, CredentialStore.Save);
+            if (migrated != Settings.ServiceBaseUrl) {
+                Settings.ServiceBaseUrl = migrated; SaveSettings();
+                Logger.Log(LogLevel.Info, "CNGoldenLink", "Service address migrated to " + migrated);
+            }
+        } catch (Exception ex) { Logger.Log(LogLevel.Warn, "CNGoldenLink", "Service migration: " + ex.GetType().Name); }
+    }
     public override void Load() {
         if (loaded) return;
         exiting = false; loaded = true; attempted = false; uploadRequested = true;

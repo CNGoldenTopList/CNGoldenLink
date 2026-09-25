@@ -55,7 +55,7 @@ export function demoInsights() {
 }
 export function demoSettings() {
   return {settings:{version:'0.3.0',connectionEnabled:true,connectionStatus:'connected',diagnosticsEnabled:false,checkUpdates:true,
-    updateDotInObs:true,overlayPort:32272,serviceBaseUrl:'https://gist.diving-fish.com',cctAvailable:true},
+    updateDotInObs:true,overlayPort:32272,serviceBaseUrl:'https://cngist.com',cctAvailable:true},
     update:{available:true,current:'0.3.0',latest:'0.3.1',downloadUrl:'https://aliyun-static.diving-fish.com/cngist/CNGoldenLink-0.3.1.zip',
       checkedAt:new Date().toISOString(),error:null,showInObs:true}};
 }

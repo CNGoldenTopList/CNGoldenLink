@@ -1,8 +1,8 @@
 # CNGoldenLink
 
-CN 金榜的 Celeste 联动 Mod，版本 0.3.0。
+CN 金榜的 Celeste 联动 Mod，版本 0.3.1。
 
-在 Mod 菜单或控制台开启连接后，通过浏览器登录 CN 金榜并授权。Mod 按玩家走过的路线同步：进入地图、切换房间、带金状态变化（拿起、死亡）、通关和退出地图时各上传一次当前状态、CCT 统计和地图死亡数据；在同一房间内的练习不会触发上传。空闲时每 25 秒发送一次轻量在线心跳，保持服务端 60 秒在线状态。服务地址可通过设置文件的 `ServiceBaseUrl` 修改。
+在 Mod 菜单或控制台开启连接后，通过浏览器登录 CN 金榜并授权。Mod 按玩家走过的路线同步：进入地图、切换房间、带金状态变化（拿起、死亡）、通关和退出地图时各上传一次当前状态、CCT 统计和地图死亡数据；在同一房间内的练习不会触发上传。空闲时每 25 秒发送一次轻量在线心跳，保持服务端 60 秒在线状态。服务地址默认为 `https://cngist.com`，可通过设置文件的 `ServiceBaseUrl` 修改。0.3.1 起，设置中仍为旧默认地址 `https://gist.diving-fish.com` 的安装会在启动时自动改为新地址，并复制本机登录凭据与挑战选择，无需重新授权；自定义的服务地址保持不变。
 
 无金完整通关最少死亡始终在本地记录；连接开关只控制上传，重新连接后补传已保存的纪录。当前支持 Windows，依赖版本见 `everest.yaml`。
 
@@ -79,7 +79,7 @@ dotnet build -c Release
 ./scripts/package.ps1 -CelestePath "E:/SteamLibrary/steamapps/common/Celeste"
 ```
 
-生成的 `artifacts/CNGoldenLink-0.3.0.zip` 放入游戏 `Mods` 目录，移走旧版本后启动游戏。安装包不包含游戏或 CCT 程序集。
+生成的 `artifacts/CNGoldenLink-0.3.1.zip` 放入游戏 `Mods` 目录，移走旧版本后启动游戏。安装包不包含游戏或 CCT 程序集。
 
 打包脚本自动扫描 `Dialog/Simplified Chinese.txt`，对照原版字库生成缺字补充，将 `.fnt` 和 PNG 放入安装包的 `Dialog/Fonts`。模组自身的中文 Dialog 无需额外安装 Chinese Font Pack 或 Extended Chinese Fonts。每次打包都会重新生成，新增文案无需手动补字；运行时返回的任意中文文本不在此覆盖范围，OBS Overlay 使用浏览器字体。
 
@@ -96,7 +96,7 @@ node --test overlay-preview/test/*.test.mjs
 
 ## 自动发布
 
-GitHub Actions 在推送版本标签时运行测试、构建并发布 Release。标签必须指向 main 中的提交，格式为 `v0.3.0` 或 `0.3.0`，并与 `.csproj` 和 `everest.yaml` 中的 Mod 版本一致。Actions 页面也可手动运行构建，仅生成下载产物，不发布。
+GitHub Actions 在推送版本标签时运行测试、构建并发布 Release。标签必须指向 main 中的提交，格式为 `v0.3.1` 或 `0.3.1`，并与 `.csproj` 和 `everest.yaml` 中的 Mod 版本一致。Actions 页面也可手动运行构建，仅生成下载产物，不发布。
 
 构建时自动按 `everest.yaml` 的依赖版本下载 Everest 官方 stable Release 的 `lib-stripped.zip` 和 CCT 官方对应 Release 的安装包。更新 CCT 时修改清单中的依赖版本即可；不自动追踪 latest。新版本 API 不兼容会导致编译失败，行为兼容性仍需游戏内验证。
 

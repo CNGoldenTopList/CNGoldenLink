@@ -119,11 +119,28 @@ Check(events.Status == "connected" && berryServer.Berries.Count == 1, "rejected 
 Check(berryServer.Baselines + berryServer.Changes == baselines, "no CCT upload without a new room sample");
 events.Stop(); await events.Completion.WaitAsync(TimeSpan.FromSeconds(5));
 
+// Old default address moves to cngist.com once, copying the device token and challenge selections.
+var migrationDir = Path.Combine(Path.GetTempPath(), "GoldenLinkMigration-" + Guid.NewGuid());
+Directory.CreateDirectory(migrationDir);
+File.WriteAllText(Path.Combine(migrationDir, "overlay-selections.json"), "{\"https://gist.diving-fish.com|676\":\"2141\",\"https://other.test|1\":\"2\"}");
+var vault = new Dictionary<string, string> { ["https://gist.diving-fish.com/"] = "old-token" };
+string? LoadToken(Uri u) => vault.TryGetValue(u.AbsoluteUri, out var t) ? t : null;
+void SaveToken(Uri u, string t) => vault[u.AbsoluteUri] = t;
+Check(ServiceMigration.Migrate("https://gist.diving-fish.com/", migrationDir, LoadToken, SaveToken) == "https://cngist.com", "old default migrated");
+Check(vault["https://cngist.com/"] == "old-token" && vault.ContainsKey("https://gist.diving-fish.com/"), "token copied, old entry kept");
+var migrated = JsonDocument.Parse(File.ReadAllText(Path.Combine(migrationDir, "overlay-selections.json"))).RootElement;
+Check(migrated.GetProperty("https://cngist.com|676").GetString() == "2141" && migrated.TryGetProperty("https://other.test|1", out _), "selections copied to the new address");
+vault["https://cngist.com/"] = "new-token";
+ServiceMigration.Migrate("https://gist.diving-fish.com", migrationDir, LoadToken, SaveToken);
+Check(vault["https://cngist.com/"] == "new-token", "existing token on the new address is not overwritten");
+Check(ServiceMigration.Migrate("https://self-hosted.test", migrationDir, LoadToken, SaveToken) == "https://self-hosted.test", "custom server untouched");
+Check(ServiceMigration.Migrate("https://gist.diving-fish.com", migrationDir, _ => throw new IOException(), (_, _) => {}) == "https://cngist.com", "credential failure still migrates the address");
+
 var unauthorized = new FakeServer { RejectConfig = true };
 var denied = new RemoteUploader("https://example.test", 1, unauthorized, _ => "synthetic-token", (_, _) => {}, _ => throw new Exception("must not open browser"));
 await denied.Completion.WaitAsync(TimeSpan.FromSeconds(5));
 Check(denied.Status == "authorization_required" && unauthorized.Presences == 0, "401 stops without repeated authorization");
-Console.WriteLine("PASS: loopback/PKCE, origin validation, first baseline, incremental sync, unchanged suppression, lost ACK recovery, berries, heartbeat, version, stop and revoked token.");
+Console.WriteLine("PASS: loopback/PKCE, origin validation, first baseline, incremental sync, unchanged suppression, lost ACK recovery, berries, heartbeat, version, service migration, stop and revoked token.");
 
 sealed class FakeServer : HttpMessageHandler
 {

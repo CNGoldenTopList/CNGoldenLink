@@ -9,5 +9,6 @@
     <Compile Include="../src/LoopbackAuthorization.cs" Link="LoopbackAuthorization.cs" />
     <Compile Include="../src/CredentialStore.cs" Link="CredentialStore.cs" />
     <Compile Include="../src/NoGoldenBest.cs" Link="NoGoldenBest.cs" />
+    <Compile Include="../src/ServiceMigration.cs" Link="ServiceMigration.cs" />
   </ItemGroup>
 </Project>
