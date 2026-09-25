@@ -124,3 +124,10 @@ jobs:
           set -euo pipefail
           printf '国内 CDN 下载：[CNGoldenLink %s](%s)\n' "$RELEASE_VERSION" "$CDN_URL" > release-notes.md
           gh release create "$RELEASE_TAG" "release/CNGoldenLink-${RELEASE_VERSION}.zip" --verify-tag --title "CNGoldenLink $RELEASE_VERSION" --generate-notes --notes-file release-notes.md
+      - name: Publish update manifest for in-game update check
+        env:
+          OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+          RELEASE_VERSION: ${{ needs.build.outputs.version }}
+          RELEASE_URL: https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}
+        run: python scripts/upload-oss.py --latest "$RELEASE_VERSION" --release-url "$RELEASE_URL"

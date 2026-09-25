@@ -1,35 +1,73 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Golden Link / Broadcast studio</title><link rel="stylesheet" href="/style.css"></head>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Golden Link 控制台</title><link rel="stylesheet" href="/hub.css"></head>
 <body>
-<header class="studio"><a class="wordmark" href="/apex"><span class="logo"><svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M5 20 43 5 29 43 21 28Z" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="m43 5-22 23-16-8m16 8 8 15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="m21 28-2 10 7-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span> GOLDEN LINK <small>BROADCAST LAB</small></a><nav aria-label="界面主题"><a href="/apex" id="apex-link">01 / APEX</a><a href="/orbit" id="orbit-link">02 / ORBIT</a></nav><span class="studio-note">LOCAL OVERLAY · DESIGN PREVIEW</span></header>
-<main><div class="intro"><div><span class="eyebrow" id="edition"></span><h1 id="page-title"></h1></div><p id="description"></p></div>
-<div id="viewport"><div id="board" class="board">
-  <svg class="mat" viewBox="0 0 1920 1080" aria-hidden="true"><path fill-rule="evenodd" d="M0 0H1920V1080H0Z M24 24V924H1624V24Z"/></svg>
-  <div class="game" aria-label="1600×900 游戏透明区域"><div class="game-art"><div class="aurora"></div><div class="mountain back"></div><div class="mountain front"></div><div class="stars"></div><div class="game-caption"><span>YOUR CLIMB. CENTER STAGE.</span><strong>留给每一次，向上。</strong><p>游戏画面预留 · 1600 × 900</p></div><div class="game-footer"><span>GAME CAPTURE</span><span>24 PX SAFE FRAME</span></div></div></div>
-  <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
-  <aside class="rail">
-    <div class="rail-brand"><span class="brand-symbol"><svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M5 20 43 5 29 43 21 28Z" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="m43 5-22 23-16-8m16 8 8 15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="m21 28-2 10 7-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span><div>CN 金榜<span>实时追踪</span></div><span class="tiny-star">✦</span></div>
-    <div class="status"><i></i><span id="status">练习中</span><span id="source-label">DEMO</span></div>
-    <section class="identity">
-      <div class="kicker">当前地图</div><h2 id="map-name"></h2>
-      <div class="campaign" id="campaign"></div>
-      <div class="challenge"><div class="kicker">当前挑战</div><b id="challenge"></b><div class="tier-row"><span>金榜难度</span><strong class="tier" id="tier"></strong></div></div>
-    </section>
-    <section class="route"><div class="section-label"><span>路线进度</span><span id="cp-label"></span></div><div id="checkpoints"></div></section>
-    <section class="pb"><div id="practice-pb"><div class="section-label"><span>无金通关最少死亡</span></div><div class="pb-value"><strong id="pb"></strong><span>次死亡<br>个人最佳</span></div></div><div id="golden-pb-panel" hidden><div class="section-label"><span>带金个人最佳</span></div><div class="pb-record"><div class="pb-record-label"><span>总 PB</span><small id="golden-pb"></small></div><progress id="golden-pb-bar" max="1" value="0" aria-label="总 PB 房间进度"></progress></div><div class="pb-record session"><div class="pb-record-label"><span>会话 PB</span><small id="session-golden-pb"></small></div><progress id="session-golden-pb-bar" max="1" value="0" aria-label="会话 PB 房间进度"></progress></div></div><div class="pb-line"><span>累计死亡</span><b id="total"></b></div></section>
-    <div class="rail-bottom"><span class="signal"><i></i><i></i><i></i><i></i></span><span>CCT 实时追踪</span><span>✧</span></div>
-  </aside>
-  <footer class="telemetry">
-    <section class="room-block"><div class="section-label">当前房间</div><div class="room-value"><strong id="room"></strong><span id="room-count"></span></div><div class="progress"><i id="progress"></i></div></section>
-    <section class="streak-block"><div class="section-label">连续通过</div><div class="metric"><strong id="streak"></strong><small>次</small></div><div class="metric-detail"><span>最佳</span><b id="best-streak"></b></div></section>
-    <section class="rate-block"><div class="section-label">带金成功率</div><div class="metric"><strong id="success"></strong><small>%</small></div><div class="metric-detail"><span>通过 / 尝试</span><b id="samples"></b></div></section>
-    <section class="entry-block"><div class="section-label">进入率</div><div class="metric"><strong id="entry"></strong><small>%</small><span class="scope">累计</span></div><div class="session-detail"><span>本次</span><b id="session-entry"></b></div></section>
-    <section class="attempt-block"><div class="section-label">带金死亡</div><div class="metric"><strong id="deaths"></strong><small>次</small><span class="scope">累计</span></div><div class="session-detail"><span>本次</span><b id="session-deaths"></b><small>次</small></div></section>
-    <section class="history-block"><div class="section-label">最近 20 次</div><div id="history"></div><div class="history-legend"><span><i></i>通过</span><span><i></i>失败</span><span>较早 → 最近</span></div></section>
-  </footer>
-  <div class="bottomline"><span id="theme-signature"></span><span id="state-line">练习的每一步，都有迹可循。</span><span>CN 金榜 × CONSISTENCY TRACKER</span></div>
-  <div class="golden-ribbon">✦ GOLDEN RUN <span>专注下一间。</span></div>
-</div></div>
-<div class="controls"><div class="control-heading"><span class="control-dot"></span><strong>演示控制台</strong><span>虚构地图及 Tier · 不代表实际金榜数据</span></div><div class="buttons"><button id="play" aria-pressed="false">播放演示</button><button id="next">下一房间 ↗</button><button id="change-challenge">切换挑战示例</button><button id="golden" aria-pressed="false">带金模式</button><button id="paused" aria-pressed="false">暂停状态</button><button id="offline" aria-pressed="false">断线状态</button><button id="reset">重置</button><a id="obs-link" target="_blank" rel="noopener">OBS 透明页 ↗</a></div></div>
-<div class="footnote"><span>1920 × 1080 CANVAS / 1600 × 900 GAME / 24 PX INSET</span><span>两套主题 · 一个数据接口 · 无外部字体或图片请求</span></div>
-</main><script type="module" src="/app.mjs"></script></body></html>
+<header class="bar">
+  <a class="mark" href="/"><svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M5 20 43 5 29 43 21 28Z" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="m43 5-22 23-16-8m16 8 8 15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="m21 28-2 10 7-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg><span>GOLDEN LINK</span><small>控制台</small></a>
+  <nav aria-label="页面"><a href="/" aria-current="page">控制台</a><a href="/apex">APEX</a><a href="/orbit">ORBIT</a></nav>
+  <span class="meta"><span id="version"></span><a id="update-link" target="_blank" rel="noopener" hidden><i></i><span></span></a><span id="source" class="tag"></span></span>
+</header>
+<main>
+  <section class="now" aria-labelledby="map">
+    <div class="now-main">
+      <div class="kicker" id="state">等待本地数据</div>
+      <h1 id="map">等待进入地图</h1>
+      <p id="map-sub"></p>
+    </div>
+    <dl class="facts">
+      <div><dt>金榜连接</dt><dd id="connection">—</dd></div>
+      <div><dt>当前房间</dt><dd id="room">—</dd></div>
+      <div><dt>挑战</dt><dd><select id="challenge" aria-label="当前挑战" disabled><option value="">等待地图</option></select><small id="challenge-note"></small></dd></div>
+    </dl>
+  </section>
+
+  <section id="obs" aria-labelledby="obs-title">
+    <header class="section-head"><h2 id="obs-title">OBS 接入</h2><p>浏览器源 <b>1920 × 1080</b>，游戏源放在其下方：位置 <b>X 24 · Y 24</b>，尺寸 <b>1600 × 900</b>。</p></header>
+    <div class="themes">
+      <article class="theme apex"><div class="theme-name"><b>APEX</b><span>冰蓝转播 · 清晰的路线层次</span></div><code id="url-apex"></code><div class="theme-actions"><button type="button" data-copy="url-apex">复制 OBS 链接</button><a href="/apex">预览与挑战选择 ↗</a></div></article>
+      <article class="theme orbit"><div class="theme-name"><b>ORBIT</b><span>铜金圆弧 · 带金时整体变暖</span></div><code id="url-orbit"></code><div class="theme-actions"><button type="button" data-copy="url-orbit">复制 OBS 链接</button><a href="/orbit">预览与挑战选择 ↗</a></div></article>
+    </div>
+    <p class="note">请把上面的 OBS 链接填入浏览器源，不要使用本控制台页：它会随窗口缩放，和游戏画面尺寸对不上。</p>
+  </section>
+
+  <section id="data" aria-labelledby="data-title">
+    <header class="section-head"><h2 id="data-title">练习数据</h2><p id="data-scope">来自 Consistency Tracker 的当前地图统计，仅在本机计算，不会上传。</p></header>
+    <p class="empty" id="data-empty">进入一张已配置 CCT 路线的地图后显示图表。</p>
+    <div id="data-body" hidden>
+      <div class="kpis">
+        <div><span>带金次数</span><b id="k-runs">—</b><small id="k-runs-sub"></small></div>
+        <div><span>平均到达</span><b id="k-avg">—</b><small id="k-avg-sub"></small></div>
+        <div><span>PB</span><b id="k-pb">—</b><small id="k-pb-sub"></small></div>
+        <div><span>从头通关概率</span><b id="k-chance">—</b><small id="k-chance-sub"></small></div>
+        <div><span>最难房间</span><b id="k-choke">—</b><small id="k-choke-sub"></small></div>
+      </div>
+      <div class="charts">
+        <figure class="wide"><figcaption><b>带金漏斗</b><small>每个房间的到达率。柱为累计，线为本次会话；竖线为 CP 分界。</small></figcaption><div class="chart tall"><canvas id="c-funnel" aria-label="带金漏斗图"></canvas></div></figure>
+        <figure class="wide"><figcaption><b>房间表现</b><span class="seg" role="group" aria-label="房间指标"><button type="button" data-metric="golden" aria-pressed="true">带金成功率</button><button type="button" data-metric="success" aria-pressed="false">最近 20 次成功率</button><button type="button" data-metric="time" aria-pressed="false">用时</button></span><small id="rooms-note"></small></figcaption><div class="chart"><canvas id="c-rooms" aria-label="房间表现图"></canvas></div></figure>
+        <figure><figcaption><b>本次稳定性</b><small>本次会话每次带金到达的房间，粗线为 10 次滚动平均。</small></figcaption><div class="chart"><canvas id="c-session" aria-label="本次稳定性曲线"></canvas></div></figure>
+        <figure><figcaption><b>历史会话</b><small>每个练习日的 PB、会话 PB 与会话平均到达；虚线为房间平均成功率。</small></figcaption><div class="chart"><canvas id="c-history" aria-label="历史会话曲线"></canvas></div></figure>
+      </div>
+      <table class="cps"><thead><tr><th>CP</th><th>房间</th><th>带金死亡 · 累计</th><th>本次</th><th>一次通过概率</th></tr></thead><tbody id="cp-rows"></tbody></table>
+    </div>
+  </section>
+
+  <section id="settings" aria-labelledby="settings-title">
+    <header class="section-head"><h2 id="settings-title">设置</h2><p id="settings-note">修改立即生效并保存到 Mod 设置。</p></header>
+    <div class="toggles">
+      <label class="toggle"><span><b>连接 CN 金榜</b><small>上传实时状态、CCT 统计与通关记录。首次开启会打开浏览器授权。</small></span><input type="checkbox" data-setting="connectionEnabled"></label>
+      <label class="toggle"><span><b>自动检查更新</b><small>每 6 小时读取一次发布信息，只提示，不会自动下载。</small></span><input type="checkbox" data-setting="checkUpdates"></label>
+      <label class="toggle"><span><b>OBS 页显示更新提示点</b><small>有新版本时，在 Overlay 状态行显示一个小圆点。</small></span><input type="checkbox" data-setting="updateDotInObs"></label>
+      <label class="toggle"><span><b>本地诊断日志</b><small>写入游戏目录 CNGoldenLinkData/logs，排查问题时再开启。</small></span><input type="checkbox" data-setting="diagnosticsEnabled"></label>
+    </div>
+    <dl class="info">
+      <div><dt>Mod 版本</dt><dd id="i-version">—</dd></div>
+      <div><dt>更新</dt><dd><span id="i-update">—</span><button type="button" id="check-update">立即检查</button></dd></div>
+      <div><dt>Consistency Tracker</dt><dd id="i-cct">—</dd></div>
+      <div><dt>本地端口</dt><dd id="i-port">—</dd></div>
+      <div><dt>金榜服务</dt><dd id="i-server">—</dd></div>
+    </dl>
+    <p class="note">端口与服务地址在游戏目录的 Mod 设置文件中修改（OverlayPort、ServiceBaseUrl）。</p>
+  </section>
+</main>
+<footer class="foot"><span>CN 金榜 × Consistency Tracker</span><span>本页只在本机访问</span></footer>
+<script src="/chart.umd.min.js"></script><script type="module" src="/hub.mjs"></script>
+</body></html>

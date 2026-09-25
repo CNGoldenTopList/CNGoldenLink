@@ -43,6 +43,22 @@ class UploadTests(unittest.TestCase):
             output = Path(os.environ["GITHUB_OUTPUT"]).read_text()
             self.assertNotIn("test-secret", output)
 
+    def test_latest_manifest(self):
+        with patch("builtins.print"), patch.dict(os.environ, {
+            "OSS_ACCESS_KEY_ID": "test-id", "OSS_ACCESS_KEY_SECRET": "test-secret"}):
+            bucket = Mock()
+            bucket.head_object.return_value = SimpleNamespace(headers={"x-oss-meta-sha256": "abc"})
+            sdk = SimpleNamespace(Auth=Mock(), Bucket=Mock(return_value=bucket))
+            manifest = module.publish_latest("0.3.0", sdk, "https://github.com/x/releases/tag/0.3.0")
+            bucket.head_object.assert_called_with("cngist/CNGoldenLink-0.3.0.zip")
+            key, body = bucket.put_object.call_args.args
+            self.assertEqual(key, "cngist/CNGoldenLink-latest.json")
+            self.assertEqual(manifest["downloadUrl"], "https://aliyun-static.diving-fish.com/cngist/CNGoldenLink-0.3.0.zip")
+            self.assertIn(b'"version": "0.3.0"', body)
+            self.assertIn("max-age=300", bucket.put_object.call_args.kwargs["headers"]["Cache-Control"])
+            with self.assertRaisesRegex(ValueError, "major.minor.patch"):
+                module.publish_latest("latest", sdk)
+
     def test_missing_credentials_and_invalid_filename(self):
         with tempfile.TemporaryDirectory() as directory, patch("builtins.print"), patch.dict(os.environ, {}, clear=True):
             package = Path(directory) / "CNGoldenLink-0.1.0.zip"

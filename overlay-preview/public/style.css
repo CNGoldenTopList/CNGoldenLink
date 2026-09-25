@@ -1454,3 +1454,6 @@ html.obs-root {
 .pb-record progress::-webkit-progress-value {background:var(--accent);border-radius:4px}
 .pb-record progress::-moz-progress-bar {background:var(--accent);border-radius:4px}
 .pb-record.session progress {opacity:.65}
+/* Update available: a single quiet dot beside the source label, never text on stream. */
+#update-dot {width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:var(--accent);opacity:.7}
+.board #update-dot {width:9px;height:9px;flex-basis:9px}

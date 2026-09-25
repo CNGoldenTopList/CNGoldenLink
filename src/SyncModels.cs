@@ -22,6 +22,17 @@ public sealed record CctScope(string DatasetId, string Sid, string Side, string 
 public sealed record CctCapture(string DatasetId, string Sid, string Side, int SegmentIndex, CctState State);
 public sealed record SyncSnapshot(LiveObservation Live, CctCapture? Cct, AreaStatistics? Area,
     long CapturedAt, string? SamplingError = null);
+/// <summary>Actual golden ("golden") or Collab Utils silver ("silver") berry collection, reported once per berry.</summary>
+public sealed record BerryCollected(string EventId, string? DatasetId, string Sid, string Side, string? Room, string Berry);
+
+// Local-only CCT history for the control page charts. Never uploaded; the sync protocol above stays unchanged.
+public sealed record CctPastSession(DateTime Started, int GoldenDeaths, int GoldenDeathsSession, float SuccessRate,
+    string? PbRoom, string? SessionPbRoom, float AverageRunDistance, float AverageRunDistanceSession,
+    int Collections, int CollectionsSession, int Runs);
+/// <param name="SessionRuns">Room keys where each golden run of the current session ended; null is a win.</param>
+/// <param name="TimeSpentMs">Time spent per room key over all play, in milliseconds.</param>
+public sealed record CctHistory(DateTime SessionStarted, string?[] SessionRuns, CctPastSession[] Sessions,
+    IReadOnlyDictionary<string, long> TimeSpentMs, IReadOnlyDictionary<string, long> TimeSpentInRunsMs);
 
 public static class SyncJson
 {

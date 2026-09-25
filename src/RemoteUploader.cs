@@ -10,8 +10,11 @@ namespace CNGoldenLink;
 internal sealed class RemoteUploader
 {
     private readonly Uri origin;
-    private readonly int interval;
+    private readonly int heartbeat;
+    private readonly string? clientVersion;
     private readonly CancellationTokenSource stop = new();
+    private readonly SemaphoreSlim wake = new(0, 1);
+    private readonly List<(BerryCollected Event, long QueuedAt)> berries = new();
     private readonly HttpClient http;
     private SyncSnapshot? latest;
     private string status = "connecting";
@@ -32,9 +35,12 @@ internal sealed class RemoteUploader
     private readonly Action<string> openBrowser;
     public string Status => Volatile.Read(ref status);
     public Task Completion { get; }
-    public RemoteUploader(string baseUrl, int intervalSeconds, HttpMessageHandler? handler = null,
-        Func<Uri, string?>? loadCredential = null, Action<Uri, string>? saveCredential = null, Action<string>? openBrowser = null) {
-        origin = ValidateOrigin(baseUrl); interval = Math.Clamp(intervalSeconds, 1, 30);
+    /// <param name="heartbeatSeconds">Idle presence refresh. Data is sent when the game wakes the uploader
+    /// (room change, golden state change, berry, completion); the heartbeat only keeps the 60 s server TTL alive.</param>
+    public RemoteUploader(string baseUrl, int heartbeatSeconds, HttpMessageHandler? handler = null,
+        Func<Uri, string?>? loadCredential = null, Action<Uri, string>? saveCredential = null, Action<string>? openBrowser = null,
+        string? clientVersion = null) {
+        origin = ValidateOrigin(baseUrl); heartbeat = Math.Clamp(heartbeatSeconds, 1, 45); this.clientVersion = clientVersion;
         this.loadCredential = loadCredential ?? CredentialStore.Load;
         this.saveCredential = saveCredential ?? CredentialStore.Save;
         this.openBrowser = openBrowser ?? (url => { Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }); });
@@ -60,6 +66,13 @@ internal sealed class RemoteUploader
             }
             pending[key] = snapshot;
         }
+        Wake();
+    }
+    private void Wake() { try { wake.Release(); } catch (SemaphoreFullException) { } }
+    /// <summary>Golden/silver berry collection. Sent as soon as possible; the event ID makes retries idempotent.</summary>
+    public void QueueBerry(BerryCollected berry) {
+        lock (pendingGate) { if (berries.Count < 16) berries.Add((berry, Environment.TickCount64)); }
+        Wake();
     }
     // Called on the game thread every frame; network cadence is independent of room sampling.
     public void ObserveLive(LiveObservation observation) {
@@ -77,6 +90,7 @@ internal sealed class RemoteUploader
             if (liveChanges.Count >= 256) { liveChanges.Dequeue(); Interlocked.Increment(ref droppedScopes); }
             liveChanges.Enqueue((observation, liveCapturedAt));
         }
+        Wake();
     }
     private async Task SyncPresence(CancellationToken cancellation) {
         if (inFlightPresence != null && Environment.TickCount64 - inFlightPresence.CapturedAt > 60000) inFlightPresence = null;
@@ -100,8 +114,9 @@ internal sealed class RemoteUploader
         lock (pendingGate) {
             if (pending.Count >= 60) return false;
             pending[key] = new(new(null, null, null, null, null, null, false, null), null, area, 0);
-            return true;
         }
+        Wake();
+        return true;
     }
     public static Task Forget(string baseUrl) => Task.Run(() => CredentialStore.Forget(ValidateOrigin(baseUrl)));
     private void SetStatus(string value) => Volatile.Write(ref status, value);
@@ -118,14 +133,16 @@ internal sealed class RemoteUploader
                 try {
                     if (connectionId == null) {
                         await Send("api/tracker/config", null, stop.Token);
-                        var opened = await Send("api/tracker/presence", new { action = "start" }, stop.Token);
+                        var opened = await Send("api/tracker/presence", new { action = "start", clientVersion }, stop.Token);
                         connectionId = opened.GetProperty("connectionId").GetString(); sequence = 0;
                     }
                     var snapshot = Volatile.Read(ref latest);
+                    bool fresh; lock (pendingGate) fresh = currentLive != null && Environment.TickCount64 - liveCapturedAt <= 10000;
                     // Never replay a stale scene as live presence after a stall or reconnect.
-                    if (snapshot != null && Environment.TickCount64 - snapshot.CapturedAt <= Math.Max(10000, interval * 2000)) {
+                    if (fresh) {
                         await SyncPresence(stop.Token);
-                        string? dataError = snapshot.SamplingError;
+                        await SyncBerries(stop.Token);
+                        string? dataError = snapshot?.SamplingError;
                         KeyValuePair<string, SyncSnapshot>[] batch;
                         lock (pendingGate) batch = pending.Take(4).ToArray();
                         foreach (var item in batch) {
@@ -147,7 +164,10 @@ internal sealed class RemoteUploader
                         SetStatus(dataError == null ? "connected" : "connected_data_error:" + dataError);
                     } else SetStatus("connected_waiting_snapshot");
                     failures = 0;
-                    await Task.Delay(TimeSpan.FromSeconds(interval), stop.Token);
+                    // Coalesce bursts (fast room chains, death + respawn) into one cycle, then sleep until woken.
+                    await Task.Delay(750, stop.Token);
+                    bool more; lock (pendingGate) more = fresh && (pending.Count > 0 || liveChanges.Count > 0 || berries.Count > 0);
+                    if (!more) try { await wake.WaitAsync(TimeSpan.FromSeconds(heartbeat), stop.Token); } catch (OperationCanceledException) when (!stop.IsCancellationRequested) { }
                 } catch (RemoteError ex) when (ex.Status is 401 or 403) {
                     SetStatus("authorization_required"); return;
                 } catch (RemoteError ex) when (ex.Status == 409 && ex.Code == "presence_conflict") {
@@ -169,6 +189,21 @@ internal sealed class RemoteUploader
                 catch { /* TTL handles unreachable servers without blocking the game. */ }
             }
             http.Dispose();
+        }
+    }
+    private async Task SyncBerries(CancellationToken cancellation) {
+        (BerryCollected Event, long QueuedAt)[] batch;
+        lock (pendingGate) {
+            // A push about a berry collected minutes ago is noise; the server also only delivers fresh events.
+            berries.RemoveAll(b => Environment.TickCount64 - b.QueuedAt > 120000);
+            batch = berries.ToArray();
+        }
+        foreach (var item in batch) {
+            var b = item.Event;
+            try { await Send("api/tracker/berry", new { eventId = b.EventId, b.DatasetId, b.Sid, b.Side, b.Room, b.Berry }, cancellation); }
+            // Older servers (404) or rejected payloads: drop, never block regular sync.
+            catch (RemoteError ex) when (ex.Status is not (401 or 403 or 429) && ex.Status < 500) { }
+            lock (pendingGate) berries.Remove(item);
         }
     }
     private async Task SyncCct(CctCapture capture, CancellationToken cancellation) {

@@ -2,6 +2,8 @@
   <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings></PropertyGroup>
   <ItemGroup>
     <Compile Include="../src/Overlay*.cs" />
+    <Compile Include="../src/InsightsProjection.cs" />
+    <Compile Include="../src/UpdateChecker.cs" />
     <Compile Include="../src/SyncModels.cs" />
     <Compile Include="../src/RemoteUploader.cs" />
     <Compile Include="../src/LoopbackAuthorization.cs" />

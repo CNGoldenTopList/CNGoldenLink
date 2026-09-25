@@ -68,6 +68,8 @@ function render(){
     const count=document.createElement('span');count.className='cp-rooms';count.textContent=`${cp.rooms??'—'} 间`;e.append(node,names,count);return e;
   });$('checkpoints').replaceChildren(...checkpoints);
   $('history').replaceChildren(...c.recent.map(value=>{const e=document.createElement('i');e.className=value?'pass':'fail';e.title=value?'通过':'失败';return e;}));
+  const update=$('update-dot'),u=d.update;
+  update.hidden=!(u.available&&(!obs||u.showInObs));update.title=u.latest?`CNGoldenLink ${u.latest} 可更新 · 在控制台查看`:'';
   set('state-line',!d.connected?'连接中断 · 保留最后快照':d.live.paused?'稍作停留，下一次继续。':d.live.holdingGolden?'金莓在身，下一间见。':'练习的每一步，都有迹可循。');
   for(const [id,state]of [['golden',d.live.holdingGolden],['paused',d.live.paused],['offline',!d.connected],['play',playing]])$(id).setAttribute('aria-pressed',String(state));
 }

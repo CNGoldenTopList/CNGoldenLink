@@ -46,5 +46,18 @@ internal static class CctAdapter
             new(new(module.Metadata.Version.ToString(), typeof(CctAdapter).Assembly.GetName().Version!.ToString(3), stats.SessionStarted.ToString("O"),
                 new(settings.TrackNegativeStreaks, window), new(stats.GoldenCollectedCount, stats.GoldenCollectedCountSession), route), rooms));
     }
+    /// <summary>Session history for local charts. Same chapter guard as <see cref="Capture"/>; bounded copies only.</summary>
+    public static CctHistory? CaptureHistory(string sid, string side)
+    {
+        var stats = ConsistencyTrackerModule.Instance?.CurrentChapterStats;
+        if (stats == null || stats.ChapterSID != sid || stats.ChapterUID != sid + "/" + side) return null;
+        static long Ms(long ticks) => ticks / TimeSpan.TicksPerMillisecond;
+        var sessions = stats.OldSessions.TakeLast(500).Select(s => new CctPastSession(s.SessionStarted, s.TotalGoldenDeaths,
+            s.TotalGoldenDeathsSession, s.TotalSuccessRate, Empty(s.PBRoomName), Empty(s.SessionPBRoomName), s.AverageRunDistance,
+            s.AverageRunDistanceSession, s.TotalGoldenCollections, s.TotalGoldenCollectionsSession, s.LastGoldenRuns?.Count ?? 0)).ToArray();
+        return new(stats.SessionStarted, stats.LastGoldenRuns.TakeLast(2000).ToArray(), sessions,
+            stats.Rooms.Take(2000).ToDictionary(p => p.Key, p => Ms(p.Value.TimeSpentInRoom)),
+            stats.Rooms.Take(2000).ToDictionary(p => p.Key, p => Ms(p.Value.TimeSpentInRoomInRuns)));
+    }
     private static string? Empty(string? value) => string.IsNullOrEmpty(value) ? null : value;
 }

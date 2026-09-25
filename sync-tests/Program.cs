@@ -98,17 +98,41 @@ replay.Publish(new(new(null, null, null, null, null, null, true, false), null, n
 await Until(() => replayServer.AreaWrites == 1, "offline best uploaded while in menu");
 replay.Stop(); await replay.Completion.WaitAsync(TimeSpan.FromSeconds(5));
 
+// Berry collections, version telemetry and the idle heartbeat. Data uploads are woken by the game, not polled.
+var berryServer = new FakeServer();
+var events = new RemoteUploader("https://example.test", 1, berryServer, _ => "synthetic-token", (_, _) => {}, _ => {}, "0.3.0");
+events.Publish(Snapshot(state));
+await Until(() => berryServer.Baselines == 1, "first room sample uploaded");
+Check(berryServer.StartVersion == "0.3.0", "presence start reports mod version");
+int presences = berryServer.Presences;
+await Until(() => berryServer.Presences >= presences + 2, "idle heartbeat keeps presence alive");
+var golden = new BerryCollected(Guid.NewGuid().ToString(), dataset, "Test/Map", "Normal", "房间😀", "golden");
+events.QueueBerry(golden);
+await Until(() => berryServer.Berries.Count == 1, "golden berry delivered");
+Check(berryServer.Berries[0].GetProperty("eventId").GetString() == golden.EventId && berryServer.Berries[0].GetProperty("berry").GetString() == "golden", "berry payload");
+berryServer.RejectBerry = true;
+events.QueueBerry(golden with { EventId = Guid.NewGuid().ToString(), Berry = "silver" });
+await Until(() => berryServer.BerryRejects == 1, "old server rejects berry endpoint");
+int baselines = berryServer.Baselines + berryServer.Changes;
+await Task.Delay(1500);
+Check(events.Status == "connected" && berryServer.Berries.Count == 1, "rejected berry dropped without breaking sync");
+Check(berryServer.Baselines + berryServer.Changes == baselines, "no CCT upload without a new room sample");
+events.Stop(); await events.Completion.WaitAsync(TimeSpan.FromSeconds(5));
+
 var unauthorized = new FakeServer { RejectConfig = true };
 var denied = new RemoteUploader("https://example.test", 1, unauthorized, _ => "synthetic-token", (_, _) => {}, _ => throw new Exception("must not open browser"));
 await denied.Completion.WaitAsync(TimeSpan.FromSeconds(5));
 Check(denied.Status == "authorization_required" && unauthorized.Presences == 0, "401 stops without repeated authorization");
-Console.WriteLine("PASS: loopback/PKCE, origin validation, first baseline, incremental sync, unchanged suppression, lost ACK recovery, stop and revoked token.");
+Console.WriteLine("PASS: loopback/PKCE, origin validation, first baseline, incremental sync, unchanged suppression, lost ACK recovery, berries, heartbeat, version, stop and revoked token.");
 
 sealed class FakeServer : HttpMessageHandler
 {
     public Action<JsonElement>? OnToken;
     public volatile int Baselines, Changes, StateReads, AreaWrites, Stops, Presences;
-    public volatile bool LoseNextAck, RejectConfig;
+    public volatile bool LoseNextAck, RejectConfig, RejectBerry;
+    public volatile int BerryRejects;
+    public string? StartVersion;
+    public readonly List<JsonElement> Berries = new();
     public volatile bool LosePresenceAck, PresenceRetried;
     public string? LostPresenceBody;
     public JsonElement LastArea, LastPresence;
@@ -132,10 +156,16 @@ sealed class FakeServer : HttpMessageHandler
                     if (LosePresenceAck) { LosePresenceAck = false; LostPresenceBody = body.GetRawText(); throw new HttpRequestException("lost presence ACK"); }
                     if (LostPresenceBody == body.GetRawText()) PresenceRetried = true;
                 }
-                if (body.GetProperty("action").GetString() == "start") result = new { ok = true, connectionId = Guid.NewGuid().ToString() };
+                if (body.GetProperty("action").GetString() == "start") {
+                    StartVersion = body.TryGetProperty("clientVersion", out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+                    result = new { ok = true, connectionId = Guid.NewGuid().ToString() };
+                }
                 if (body.GetProperty("action").GetString() == "stop") Stops++;
                 break;
             case "/api/tracker/area-stats": LastArea = body; AreaWrites++; break;
+            case "/api/tracker/berry":
+                if (RejectBerry) { BerryRejects++; return Response(new { ok = false, code = "not_found" }, HttpStatusCode.NotFound); }
+                lock (Berries) Berries.Add(body); break;
             case "/api/tracker/cct/state":
                 StateReads++;
                 result = cursor == null ? new { ok = true, current = (object?)null } : new { ok = true, current = (object?)new {

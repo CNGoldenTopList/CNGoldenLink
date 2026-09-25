@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Golden Link / Broadcast studio</title><link rel="stylesheet" href="/style.css"></head>
+<body>
+<header class="studio"><a class="wordmark" href="/"><span class="logo"><svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M5 20 43 5 29 43 21 28Z" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="m43 5-22 23-16-8m16 8 8 15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="m21 28-2 10 7-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span> GOLDEN LINK <small>BROADCAST LAB</small></a><nav aria-label="界面主题"><a href="/">控制台</a><a href="/apex" id="apex-link">01 / APEX</a><a href="/orbit" id="orbit-link">02 / ORBIT</a></nav><span class="studio-note">LOCAL OVERLAY · DESIGN PREVIEW</span></header>
+<main><div class="intro"><div><span class="eyebrow" id="edition"></span><h1 id="page-title"></h1></div><p id="description"></p></div>
+<div id="viewport"><div id="board" class="board">
+  <svg class="mat" viewBox="0 0 1920 1080" aria-hidden="true"><path fill-rule="evenodd" d="M0 0H1920V1080H0Z M24 24V924H1624V24Z"/></svg>
+  <div class="game" aria-label="1600×900 游戏透明区域"><div class="game-art"><div class="aurora"></div><div class="mountain back"></div><div class="mountain front"></div><div class="stars"></div><div class="game-caption"><span>YOUR CLIMB. CENTER STAGE.</span><strong>留给每一次，向上。</strong><p>游戏画面预留 · 1600 × 900</p></div><div class="game-footer"><span>GAME CAPTURE</span><span>24 PX SAFE FRAME</span></div></div></div>
+  <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+  <aside class="rail">
+    <div class="rail-brand"><span class="brand-symbol"><svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M5 20 43 5 29 43 21 28Z" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="m43 5-22 23-16-8m16 8 8 15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="m21 28-2 10 7-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span><div>CN 金榜<span>实时追踪</span></div><span class="tiny-star">✦</span></div>
+    <div class="status"><i></i><span id="status">练习中</span><span id="source-label">DEMO</span><b id="update-dot" hidden></b></div>
+    <section class="identity">
+      <div class="kicker">当前地图</div><h2 id="map-name"></h2>
+      <div class="campaign" id="campaign"></div>
+      <div class="challenge"><div class="kicker">当前挑战</div><b id="challenge"></b><div class="tier-row"><span>金榜难度</span><strong class="tier" id="tier"></strong></div></div>
+    </section>
+    <section class="route"><div class="section-label"><span>路线进度</span><span id="cp-label"></span></div><div id="checkpoints"></div></section>
+    <section class="pb"><div id="practice-pb"><div class="section-label"><span>无金通关最少死亡</span></div><div class="pb-value"><strong id="pb"></strong><span>次死亡<br>个人最佳</span></div></div><div id="golden-pb-panel" hidden><div class="section-label"><span>带金个人最佳</span></div><div class="pb-record"><div class="pb-record-label"><span>总 PB</span><small id="golden-pb"></small></div><progress id="golden-pb-bar" max="1" value="0" aria-label="总 PB 房间进度"></progress></div><div class="pb-record session"><div class="pb-record-label"><span>会话 PB</span><small id="session-golden-pb"></small></div><progress id="session-golden-pb-bar" max="1" value="0" aria-label="会话 PB 房间进度"></progress></div></div><div class="pb-line"><span>累计死亡</span><b id="total"></b></div></section>
+    <div class="rail-bottom"><span class="signal"><i></i><i></i><i></i><i></i></span><span>CCT 实时追踪</span><span>✧</span></div>
+  </aside>
+  <footer class="telemetry">
+    <section class="room-block"><div class="section-label">当前房间</div><div class="room-value"><strong id="room"></strong><span id="room-count"></span></div><div class="progress"><i id="progress"></i></div></section>
+    <section class="streak-block"><div class="section-label">连续通过</div><div class="metric"><strong id="streak"></strong><small>次</small></div><div class="metric-detail"><span>最佳</span><b id="best-streak"></b></div></section>
+    <section class="rate-block"><div class="section-label">带金成功率</div><div class="metric"><strong id="success"></strong><small>%</small></div><div class="metric-detail"><span>通过 / 尝试</span><b id="samples"></b></div></section>
+    <section class="entry-block"><div class="section-label">进入率</div><div class="metric"><strong id="entry"></strong><small>%</small><span class="scope">累计</span></div><div class="session-detail"><span>本次</span><b id="session-entry"></b></div></section>
+    <section class="attempt-block"><div class="section-label">带金死亡</div><div class="metric"><strong id="deaths"></strong><small>次</small><span class="scope">累计</span></div><div class="session-detail"><span>本次</span><b id="session-deaths"></b><small>次</small></div></section>
+    <section class="history-block"><div class="section-label">最近 20 次</div><div id="history"></div><div class="history-legend"><span><i></i>通过</span><span><i></i>失败</span><span>较早 → 最近</span></div></section>
+  </footer>
+  <div class="bottomline"><span id="theme-signature"></span><span id="state-line">练习的每一步，都有迹可循。</span><span>CN 金榜 × CONSISTENCY TRACKER</span></div>
+  <div class="golden-ribbon">✦ GOLDEN RUN <span>专注下一间。</span></div>
+</div></div>
+<div class="controls"><div class="control-heading"><span class="control-dot"></span><strong>演示控制台</strong><span>虚构地图及 Tier · 不代表实际金榜数据</span></div><div class="buttons"><button id="play" aria-pressed="false">播放演示</button><button id="next">下一房间 ↗</button><button id="change-challenge">切换挑战示例</button><button id="golden" aria-pressed="false">带金模式</button><button id="paused" aria-pressed="false">暂停状态</button><button id="offline" aria-pressed="false">断线状态</button><button id="reset">重置</button><a id="obs-link" target="_blank" rel="noopener">OBS 透明页 ↗</a></div></div>
+<div class="footnote"><span>1920 × 1080 CANVAS / 1600 × 900 GAME / 24 PX INSET</span><span>两套主题 · 一个数据接口 · 无外部字体或图片请求</span></div>
+</main><script type="module" src="/app.mjs"></script></body></html>

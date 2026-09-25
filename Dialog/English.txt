@@ -1,7 +1,6 @@
 CNGOLDENLINK_REMOTE_ONLY=Remote sync
 CNGOLDENLINK_SYNC_HINT=Sign in and upload data when enabled
 CNGOLDENLINK_CONNECT=Connect to CN Golden List
-CNGOLDENLINK_INTERVAL=Sync interval
 CNGOLDENLINK_REAUTHORIZE=Forget local login (then enable connection)
 CNGOLDENLINK_DIAGNOSTICS=Enable local diagnostics
 CNGOLDENLINK_SERVER_HINT=Server address: ServiceBaseUrl in mod settings file
@@ -15,3 +14,8 @@ CNGOLDENLINK_STATUS_AUTHORIZATION_REQUIRED=Authorization unavailable: check webs
 CNGOLDENLINK_STATUS_AUTHORIZATION_TIMEOUT=Authorization timed out: toggle connection to retry
 CNGOLDENLINK_STATUS_CONNECTION_REPLACED=Connected from another instance: toggle connection to retry
 CNGOLDENLINK_STATUS_ERROR=Connection / data status:
+CNGOLDENLINK_OPEN_HUB=Open control page (OBS links, charts, settings)
+CNGOLDENLINK_OVERLAY=Local OBS overlay server
+CNGOLDENLINK_CHECK_UPDATES=Check for updates automatically
+CNGOLDENLINK_UPDATE_AVAILABLE=New version @VERSION available
+CNGOLDENLINK_UPDATE_OPEN=Open download page

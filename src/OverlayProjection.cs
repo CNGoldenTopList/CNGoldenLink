@@ -3,8 +3,8 @@ namespace CNGoldenLink;
 /// <summary>Pure presentation projection. No game objects or credentials cross this boundary.</summary>
 internal static class OverlayProjection
 {
-    public static object Build(SyncSnapshot? snapshot, object catalog, object[] choices, string? mapId, string? selected, string contextStatus) {
-        var state = snapshot?.Cct?.State; var route = state?.Metadata.Route;
+    /// <summary>Route nodes in order. Grouped rooms join their node, repeats count once, ignored rooms are skipped.</summary>
+    public static List<(RouteNode Node, string[] Members)> Nodes(CctRoute? route) {
         var ignored = route?.IgnoredRooms.ToHashSet(StringComparer.Ordinal) ?? new();
         var seen = new HashSet<string>(StringComparer.Ordinal);
         var nodes = new List<(RouteNode Node, string[] Members)>();
@@ -13,6 +13,12 @@ internal static class OverlayProjection
             var members = new[] { node.RoomKey }.Concat(node.GroupedRooms).Where(k => !ignored.Contains(k) && seen.Add(k)).ToArray();
             nodes.Add((node, members));
         }
+        return nodes;
+    }
+    public static object Build(SyncSnapshot? snapshot, object catalog, object[] choices, string? mapId, string? selected, string contextStatus,
+        object? update = null) {
+        var state = snapshot?.Cct?.State; var route = state?.Metadata.Route;
+        var nodes = Nodes(route);
         int index = nodes.FindIndex(n => n.Members.Contains(snapshot?.Live.Room));
         var room = state?.Rooms.FirstOrDefault(r => r.RoomKey == snapshot?.Live.Room);
         var cps = route?.Checkpoints ?? [];
@@ -42,7 +48,7 @@ internal static class OverlayProjection
         bool valid = snapshot != null && Environment.TickCount64 - snapshot.CapturedAt < 3000;
         return new {
             schema = "goldenlink.overlay/1", source = "live", connected = valid && snapshot!.Live.Sid != null,
-            catalog, choices, mapId, selectedChallengeId = selected, contextStatus,
+            catalog, choices, mapId, selectedChallengeId = selected, contextStatus, update,
             live = new { room = index >= 0 ? nodes[index].Node.CustomRoomName ?? snapshot?.Live.Room : snapshot?.Live.Room,
                 holdingGolden = snapshot?.Live.HoldingGolden == true, paused = snapshot?.Live.Paused == true || snapshot?.Live.CctTrackingPaused == true },
             cct = new {
