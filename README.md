@@ -1,10 +1,10 @@
 # CNGoldenLink
 
-CN 金榜的 Celeste 联动 Mod，版本 0.3.2。
+CN 金榜的 Celeste 联动 Mod。
 
-在 Mod 菜单或控制台开启连接后，通过浏览器登录 CN 金榜并授权。Mod 按玩家走过的路线同步：进入地图、切换房间、带金状态变化（拿起、死亡）、通关和退出地图时各上传一次当前状态、CCT 统计和地图死亡数据；在同一房间内的练习不会触发上传。空闲时每 25 秒发送一次轻量在线心跳，保持服务端 60 秒在线状态。服务地址默认为 `https://cngist.com`，可通过设置文件的 `ServiceBaseUrl` 修改。0.3.1 起，设置中仍为旧默认地址 `https://gist.diving-fish.com` 的安装会在启动时自动改为新地址，并复制本机登录凭据与挑战选择，无需重新授权；自定义的服务地址保持不变。
+在 Mod 菜单或控制台开启连接后，通过浏览器登录 CN 金榜并授权。Mod 按玩家走过的路线同步：进入地图、切换房间、带金状态变化（拿起、死亡）、通关和退出地图时各上传一次当前状态、CCT 统计和地图死亡数据；在同一房间内的练习不会触发上传。空闲时每 25 秒发送一次轻量在线心跳，保持服务端 60 秒在线状态。服务地址默认为 `https://cngist.com`，可通过设置文件的 `ServiceBaseUrl` 修改。设置中仍为旧默认地址 `https://gist.diving-fish.com` 的安装会在启动时自动改为新地址，并复制本机登录凭据与挑战选择，无需重新授权；自定义的服务地址保持不变。
 
-无金完整通关最少死亡始终在本地记录；连接开关只控制上传，重新连接后补传已保存的纪录。当前支持 Windows，依赖版本见 `everest.yaml`。
+无金完整通关最少死亡始终在本地记录；连接开关只控制上传，重新连接后补传已保存的纪录。当前支持 Windows 和 macOS，依赖版本见 `everest.yaml`。
 
 同步本体存档当前地图面的 `Completed` 标记（已通关/未通关/未知），进入地图时读取已有通关记录，通关事件立即采样；与 PB 一同缓存并在重连后补传。实时状态携带 `datasetId`，避免服务端混用不同存档的通关记录。
 
@@ -20,7 +20,7 @@ CN 金榜的 Celeste 联动 Mod，版本 0.3.2。
 
 ## OBS Overlay
 
-自 0.2.0 起内置 OBS Overlay。提供 APEX（冰蓝转播）和 ORBIT（铜金圆弧）两套主题，由 Mod 在本机托管，页面和视觉资源随安装包提供，运行时无需 Node.js。
+内置 OBS Overlay。提供 APEX（冰蓝转播）和 ORBIT（铜金圆弧）两套主题，由 Mod 在本机托管，页面和视觉资源随安装包提供，运行时无需 Node.js。
 
 ### 接入 OBS
 
@@ -58,7 +58,7 @@ Overlay 开关独立于金榜上传开关，关闭上传仍可显示本地 CCT �
 
 服务仅监听本机，默认端口为 `32272`，可在 Mod 设置文件中通过 `OverlayPort` 修改（有效范围 `1024–65535`）。端口被占用时服务无法启动，修改后重新关闭、开启 Overlay，并同步修改浏览器和 OBS 中的 URL。挑战选择按服务地址和地图 ID 缓存在游戏目录的 `CNGoldenLinkData/overlay-selections.json`。
 
-开启金榜连接时，选择同时上传到服务端（`/api/tracker/challenge-selection`），作为「当前挑战」：带金 Ping 点提醒和金/银草莓推送只针对所选挑战的 Ping 点，在线列表显示所选挑战而不是推测。服务端保存的选择在切图时随地图资料下发，换电脑或重装后自动恢复；尚未上传成功的本地选择优先，并在恢复连接后重试。0.3.0 之前保存的本地选择会在进入对应地图时补传一次。关闭连接时只保存在本机，不读取服务端的选择；旧版服务端不支持时本次运行只保存在本机。
+开启金榜连接时，选择同时上传到服务端（`/api/tracker/challenge-selection`），作为「当前挑战」：带金 Ping 点提醒和金/银草莓推送只针对所选挑战的 Ping 点，在线列表显示所选挑战而不是推测。服务端保存的选择在切图时随地图资料下发，换电脑或重装后自动恢复；尚未上传成功的本地选择优先，并在恢复连接后重试。旧版保存的本地选择会在进入对应地图时补传一次。关闭连接时只保存在本机，不读取服务端的选择；旧版服务端不支持时本次运行只保存在本机。
 
 另提供[独立视觉预览及前端说明](overlay-preview/README.md)：使用 Node.js 20 或更新版本，在 `overlay-preview` 目录运行 `npm start`，访问 `http://localhost:32271/`（控制台）、`/apex` 或 `/orbit`。此预览使用虚构演示数据；OBS 接入真实游戏数据时使用上述 Mod 的 `32272` 端口。
 
@@ -79,7 +79,7 @@ dotnet build -c Release
 ./scripts/package.ps1 -CelestePath "E:/SteamLibrary/steamapps/common/Celeste"
 ```
 
-生成的 `artifacts/CNGoldenLink-0.3.2.zip` 放入游戏 `Mods` 目录，移走旧版本后启动游戏。安装包不包含游戏或 CCT 程序集。
+生成的 `artifacts/CNGoldenLink-<版本号>.zip` 放入游戏 `Mods` 目录，移走旧版本后启动游戏。安装包不包含游戏或 CCT 程序集。
 
 打包脚本自动扫描 `Dialog/Simplified Chinese.txt`，对照原版字库生成缺字补充，将 `.fnt` 和 PNG 放入安装包的 `Dialog/Fonts`。模组自身的中文 Dialog 无需额外安装 Chinese Font Pack 或 Extended Chinese Fonts。每次打包都会重新生成，新增文案无需手动补字；运行时返回的任意中文文本不在此覆盖范围，OBS Overlay 使用浏览器字体。
 
@@ -96,7 +96,7 @@ node --test overlay-preview/test/*.test.mjs
 
 ## 自动发布
 
-GitHub Actions 在推送版本标签时运行测试、构建并发布 Release。标签必须指向 main 中的提交，格式为 `v0.3.2` 或 `0.3.2`，并与 `.csproj` 和 `everest.yaml` 中的 Mod 版本一致。Actions 页面也可手动运行构建，仅生成下载产物，不发布。
+GitHub Actions 在推送版本标签时运行测试、构建并发布 Release。标签必须指向 main 中的提交，格式为 `v<主版本>.<次版本>.<补丁版本>` 或 `<主版本>.<次版本>.<补丁版本>`，并与 `.csproj` 和 `everest.yaml` 中的 Mod 版本一致。Actions 页面也可手动运行构建，仅生成下载产物，不发布。
 
 构建时自动按 `everest.yaml` 的依赖版本下载 Everest 官方 stable Release 的 `lib-stripped.zip` 和 CCT 官方对应 Release 的安装包。更新 CCT 时修改清单中的依赖版本即可；不自动追踪 latest。新版本 API 不兼容会导致编译失败，行为兼容性仍需游戏内验证。
 
